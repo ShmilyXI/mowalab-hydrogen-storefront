@@ -1,4 +1,4 @@
-<h1 align="center">Pilot - Shopify Hydrogen Theme</h1>
+<h1 align="center">Pilot - Shopify Hydrogen Theme1 </h1>
 
 <div align="center">
 
