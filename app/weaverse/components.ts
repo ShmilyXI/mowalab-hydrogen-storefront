@@ -52,6 +52,14 @@ import * as TestimonialItem from "~/sections/testimonials/item";
 import * as TestimonialItems from "~/sections/testimonials/items";
 import * as VideoEmbed from "~/sections/video-embed";
 import * as VideoEmbedItem from "~/sections/video-embed/video";
+// Pet Product Sections
+import * as PetBeforeAfter from "~/sections/pet-before-after";
+import * as PetCustomerTestimonials from "~/sections/pet-customer-testimonials";
+import * as PetHowToUse from "~/sections/pet-how-to-use";
+import * as PetProductHero from "~/sections/pet-product-hero";
+import * as PetProductBenefits from "~/sections/pet-product-benefits";
+import * as PetProductFaq from "~/sections/pet-product-faq";
+import * as PetTrustBadges from "~/sections/pet-trust-badges";
 
 export const components: HydrogenComponent[] = [
   SubHeading,
@@ -112,4 +120,12 @@ export const components: HydrogenComponent[] = [
   SlideShow,
   SlideShowSlide,
   Spacer,
+  // Pet Product Sections
+  PetProductHero,
+  PetProductBenefits,
+  PetBeforeAfter,
+  PetHowToUse,
+  PetProductFaq,
+  PetCustomerTestimonials,
+  PetTrustBadges,
 ];
