@@ -1,5 +1,6 @@
 import { createSchema, type HydrogenComponentProps } from "@weaverse/hydrogen";
 import { forwardRef } from "react";
+import { useLoaderData } from "react-router";
 import { cn } from "~/utils/cn";
 
 interface PetProductHeroProps extends HydrogenComponentProps {
@@ -14,6 +15,9 @@ interface PetProductHeroProps extends HydrogenComponentProps {
 }
 
 const PetProductHero = forwardRef<HTMLElement, PetProductHeroProps>((props, ref) => {
+  const loaderData = useLoaderData<any>();
+  const product = loaderData?.product;
+
   const {
     heading,
     subheading,
@@ -25,6 +29,16 @@ const PetProductHero = forwardRef<HTMLElement, PetProductHeroProps>((props, ref)
     textColor,
     ...rest
   } = props;
+
+  // Smart defaults: use Weaverse config or fall back to product data
+  const displayHeading = heading || product?.title || "Product Name";
+  const displayPrice = price || (product?.priceRange?.minVariantPrice?.amount
+    ? `$${product.priceRange.minVariantPrice.amount}`
+    : "$0.00");
+  const displayImage = heroImage || product?.featuredImage?.url || "http://iph.href.lu/800x800?text=Product";
+  const displayComparePrice = comparePrice || (product?.compareAtPriceRange?.maxVariantPrice?.amount
+    ? `$${product.compareAtPriceRange.maxVariantPrice.amount}`
+    : "");
 
   return (
     <section
@@ -47,8 +61,8 @@ const PetProductHero = forwardRef<HTMLElement, PetProductHeroProps>((props, ref)
               {/* Main Product Image */}
               <div className="aspect-square overflow-hidden rounded-2xl bg-white shadow-2xl">
                 <img
-                  src={heroImage || "http://iph.href.lu/800x800?text=Pet+Grooming+Glove"}
-                  alt={heading}
+                  src={displayImage}
+                  alt={displayHeading}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -75,12 +89,14 @@ const PetProductHero = forwardRef<HTMLElement, PetProductHeroProps>((props, ref)
           {/* Right Column - Product Info */}
           <div className="flex flex-col justify-center">
             <h1 className={cn("mb-4 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl", textColor)}>
-              {heading}
+              {displayHeading}
             </h1>
 
-            <p className={cn("mb-6 text-xl sm:text-2xl", textColor)}>
-              {subheading}
-            </p>
+            {subheading && (
+              <p className={cn("mb-6 text-xl sm:text-2xl", textColor)}>
+                {subheading}
+              </p>
+            )}
 
             {/* Rating */}
             <div className="mb-6 flex items-center gap-2">
@@ -99,11 +115,11 @@ const PetProductHero = forwardRef<HTMLElement, PetProductHeroProps>((props, ref)
             {/* Price */}
             <div className="mb-8 flex items-baseline gap-4">
               <span className={cn("text-5xl font-bold", textColor)}>
-                {price}
+                {displayPrice}
               </span>
-              {comparePrice && (
+              {displayComparePrice && (
                 <span className="text-2xl text-gray-400 line-through">
-                  {comparePrice}
+                  {displayComparePrice}
                 </span>
               )}
             </div>
@@ -131,7 +147,7 @@ const PetProductHero = forwardRef<HTMLElement, PetProductHeroProps>((props, ref)
                 type="button"
                 className="rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl"
               >
-                Add to Cart - {price}
+                Add to Cart - {displayPrice}
               </button>
 
               <button

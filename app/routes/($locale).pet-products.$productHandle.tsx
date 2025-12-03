@@ -29,6 +29,7 @@ import {
 } from "~/utils/redirect";
 import { seoPayload } from "~/utils/seo.server";
 import { WeaverseContent } from "~/weaverse";
+import { loadPetProductConfig } from "~/metas/pet-products";
 
 export const headers = routeHeaders;
 
@@ -40,8 +41,8 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const { storefront, weaverse } = context;
   const selectedOptions = getSelectedProductOptions(request);
 
-  // Load Weaverse data with custom page type "PET_PRODUCT" for pet products
-  const [{ shop, product }, weaverseData, productReviews] = await Promise.all([
+  // Load product data, weaverse data, product reviews, and custom config in parallel
+  const [{ shop, product }, weaverseData, productReviews, petConfig] = await Promise.all([
     storefront.query<ProductQuery>(PRODUCT_QUERY, {
       variables: {
         handle,
@@ -51,11 +52,11 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
       },
     }),
     weaverse.loadPage({
-      type: "PRODUCT",  // Use standard PRODUCT type for now, change to PET_PRODUCT after creating template in Weaverse Studio
+      type: "PRODUCT",
       handle,
     }),
     getJudgeMeProductReviews({ context, handle }),
-    // Add other queries here, so that they are loaded in parallel
+    loadPetProductConfig(handle),
   ]);
 
   if (!product?.id) {
@@ -75,6 +76,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
     product,
     weaverseData,
     productReviews,
+    petConfig,
     storeDomain: shop.primaryDomain.url,
     seo: seoPayload.product({ product, url: request.url }),
     recommended,
@@ -108,13 +110,7 @@ export const meta = ({ matches }: MetaArgs<typeof loader>) => {
 };
 
 export default function PetProduct() {
-  const {
-    product,
-    productReviews,
-    weaverseData,
-    recommended,
-    selectedOptions,
-  } = useLoaderData<typeof loader>();
+  const { product } = useLoaderData<typeof loader>();
 
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
@@ -169,30 +165,24 @@ export default function PetProduct() {
 
   return (
     <>
-      <WeaverseContent
-        data={weaverseData}
-        context={{
-          product,
-          selectedVariant,
-          productReviews,
-          selectedOptions,
-        }}
-      />
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: selectedVariant?.price.amount || "0",
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || "",
-              variantTitle: selectedVariant?.title || "",
-              quantity: 1,
-            },
-          ],
-        }}
-      />
+      <WeaverseContent />
+      {selectedVariant && (
+        <Analytics.ProductView
+          data={{
+            products: [
+              {
+                id: product.id,
+                title: product.title,
+                price: selectedVariant?.price.amount || "0",
+                vendor: product.vendor,
+                variantId: selectedVariant?.id || "",
+                variantTitle: selectedVariant?.title || "",
+                quantity: 1,
+              },
+            ],
+          }}
+        />
+      )}
     </>
   );
 }
